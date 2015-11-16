@@ -63,14 +63,13 @@ function DebugFS(device)
 }
 
 
-DebugFS.prototype.set_uid = function(filespec, value, callback)
+['uid', 'gid'].forEach(function(field)
 {
-  this.set_inode_field(filespec, 'uid', value, callback)
-}
-DebugFS.prototype.set_gid = function(filespec, value, callback)
-{
-  this.set_inode_field(filespec, 'gid', value, callback)
-}
+  DebugFS.prototype['set_'+field] = function(filespec, value, callback)
+  {
+    this.set_inode_field(filespec, field, value, callback)
+  }
+})
 
 
 module.exports = DebugFS

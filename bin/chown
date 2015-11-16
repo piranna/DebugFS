@@ -4,10 +4,20 @@ var join = require('path').join
 
 var async = require('async')
 
-var DebugFS = require('./DebugFS')
+var DebugFS = require('..')
 
 
-function chown(path, options, callback)
+function chown_file(path, uid, gid, callback)
+{
+  async.series(
+  [
+    debugfs.set_uid.bind(debugfs, filepath, uid),
+    debugfs.set_gid.bind(debugfs, filepath, gid)
+  ],
+  callback)
+}
+
+function chown_dir(path, options, callback)
 {
   var uid = options.uid
   var gid = options.gid
@@ -18,12 +28,7 @@ function chown(path, options, callback)
   {
     if(error) return callback(error)
 
-    async.series(
-    [
-      debugfs.set_uid.bind(debugfs, path, uid),
-      debugfs.set_gid.bind(debugfs, path, gid)
-    ],
-    function(error)
+    chown_file(path, uid, gid, function(error)
     {
       if(error) return callback(error)
 
@@ -35,15 +40,12 @@ function chown(path, options, callback)
 
           var filepath = join(path, name)
 
+          // Directory
           if(isNaN(stat.size))
-            return chown(filepath, options, callback)
+            return chown_dir(filepath, options, callback)
 
-          async.series(
-          [
-            debugfs.set_uid.bind(debugfs, filepath, uid),
-            debugfs.set_gid.bind(debugfs, filepath, gid)
-          ],
-          callback)
+          // File
+          chown_file(filepath, uid, gid, callback)
         },
         callback)
 
@@ -51,6 +53,9 @@ function chown(path, options, callback)
     })
   })
 }
+
+
+var chown = chown_dir
 
 
 var argv = process.argv
@@ -72,7 +77,7 @@ var options =
   recursive: true
 }
 
-chown('nodeos', options, function(error)
+chown(path, options, function(error)
 {
   if(error) throw error
 })
