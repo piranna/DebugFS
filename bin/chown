@@ -7,12 +7,12 @@ var async = require('async')
 var DebugFS = require('..')
 
 
-function chown_file(path, uid, gid, callback)
+function chown_entry(path, uid, gid, callback)
 {
   async.series(
   [
-    debugfs.set_uid.bind(debugfs, filepath, uid),
-    debugfs.set_gid.bind(debugfs, filepath, gid)
+    debugfs.set_uid.bind(debugfs, path, uid),
+    debugfs.set_gid.bind(debugfs, path, gid)
   ],
   callback)
 }
@@ -28,28 +28,27 @@ function chown_dir(path, options, callback)
   {
     if(error) return callback(error)
 
-    chown_file(path, uid, gid, function(error)
+    chown_entry(path, uid, gid, function(error)
     {
       if(error) return callback(error)
 
-      if(options.recursive)
-        return async.eachSeries(files, function(stat, callback)
-        {
-          var name = stat.name
-          if(name === '.' || name === '..') return callback()
+      if(!options.recursive) return callback()
 
-          var filepath = join(path, name)
+      async.eachSeries(files, function(stat, callback)
+      {
+        var name = stat.name
+        if(name === '.' || name === '..') return callback()
 
-          // Directory
-          if(isNaN(stat.size))
-            return chown_dir(filepath, options, callback)
+        var filepath = join(path, name)
 
-          // File
-          chown_file(filepath, uid, gid, callback)
-        },
-        callback)
+        // Directory
+        if(isNaN(stat.size))
+          return chown_dir(filepath, options, callback)
 
-      callback()
+        // File
+        chown_entry(filepath, uid, gid, callback)
+      },
+      callback)
     })
   })
 }
