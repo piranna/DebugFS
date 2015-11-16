@@ -1,0 +1,19 @@
+{
+  "name": "debugfs",
+  "version": "0.0.0",
+  "description": "Node.js wrapper for debugfs command",
+  "main": "DebugFS.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piranna/DebugFS.git"
+  },
+  "author": "Jesús Leganés Combarro 'piranna'",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/piranna/DebugFS/issues"
+  },
+  "homepage": "https://github.com/piranna/DebugFS#readme"
+}
